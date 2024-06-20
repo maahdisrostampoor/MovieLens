@@ -4,7 +4,6 @@ import requests
 from bs4 import BeautifulSoup
 from typing import Dict, Optional
 from urllib.parse import quote, urlparse
-from serpapi import GoogleSearch
 
 logging.basicConfig(
     filename='error.log',
@@ -12,7 +11,6 @@ logging.basicConfig(
     format='%(asctime)s | [%(levelname)s]: %(message)s',
     datefmt='%m-%d-%Y / %I:%M:%S %p'
 )
-
 
 
 class SearchResults:
@@ -27,7 +25,6 @@ class SearchResults:
             output += f"Link: {result.get('link', 'Link not found')}\n"
             output += "---\n"
         return output
-
 
 class GoogleReverseImageSearch:
     def __init__(self):
@@ -96,10 +93,8 @@ class GoogleReverseImageSearch:
         while attempts < self.retry_count:
             try:
                 response = requests.get(url, headers=self.headers)
-                
                 print(response.status_code) 
-                print(response.content)    
-                response.delete_cookie('cookie_name', domain="cookie_domain")           
+                print(response.content)               
                 if response.headers.get('Content-Type', '').startswith('text/html'):
                     response.raise_for_status()
                     return response
