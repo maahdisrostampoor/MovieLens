@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Movie Lens App'
+
+Globals:
+  Function:
+    Runtime: python3.10
+    Timeout: 30
+    MemorySize: 256
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler # Adjust the handler name as per your Lambda function
+      CodeUri: movie_name/
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
+
+Outputs:
+  LambdaFunctionArn:
+    Description: ARN of the First Lambda Function
+    Value: !GetAtt LambdaFunction.Arn
+
