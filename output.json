@@ -1,0 +1,24 @@
+{
+    "search_metadata": {
+        "id": "667eacbdd5a5310dd06f5639",
+        "status": "Success",
+        "json_endpoint": "https://serpapi.com/searches/6bb8a787697a06d7/667eacbdd5a5310dd06f5639.json",
+        "created_at": "2024-06-28 12:29:49 UTC",
+        "processed_at": "2024-06-28 12:29:49 UTC",
+        "google_reverse_image_url": "https://www.google.com/searchbyimage?q=search&image_url=https://movielens69.s3.eu-west-1.amazonaws.com/4.jpeg&sbisrc=cr_1_5_2",
+        "raw_html_file": "https://serpapi.com/searches/6bb8a787697a06d7/667eacbdd5a5310dd06f5639.html",
+        "total_time_taken": 2.24
+    },
+    "search_parameters": {
+        "q": "search",
+        "engine": "google_reverse_image",
+        "image_url": "https://movielens69.s3.eu-west-1.amazonaws.com/4.jpeg",
+        "google_domain": "google.com",
+        "device": "desktop"
+    },
+    "search_information": {
+        "organic_results_state": "Fully empty",
+        "query_displayed": "search"
+    },
+    "error": "Google Reverse Image hasn't returned any results for this query."
+}
