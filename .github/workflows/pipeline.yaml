@@ -11,7 +11,7 @@ on:
 
 env:
   SAM_TEMPLATE: template.yaml
-  TESTING_STACK_NAME: sam-app
+  TESTING_STACK_NAME: sam-dev
   TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-XM0aJ7MjPelh
   TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-aXboLQAtpP21
   TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-xdic9oh3ats9
@@ -20,7 +20,7 @@ env:
   # testing "sam package" and "sam deploy" commands.
   # TESTING_IMAGE_REPOSITORY = '0123456789.dkr.ecr.region.amazonaws.com/repository-name'
   TESTING_REGION: us-east-1
-  PROD_STACK_NAME: prod-sam-app
+  PROD_STACK_NAME: sam-prod
   PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-xyqGyrFe5XEP
   PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-WiqrgKgftpTn
   PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-y1a99wc8nefw
