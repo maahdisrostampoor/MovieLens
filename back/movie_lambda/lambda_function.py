@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 # Initialize clients
-dynamodb = boto3.resource('dynamodb', region_name='eu-west-1')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table('Movie')
 ssm_client = boto3.client('ssm')
 movie_database_url = "http://www.omdbapi.com/"
