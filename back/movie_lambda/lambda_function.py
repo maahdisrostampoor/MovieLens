@@ -39,12 +39,9 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def lambda_handler(event, context):
     try:
-        # Extract the body-json from the event
-        body_json = event.get('body-json', {})
-        print(body_json)
-        image_url = body_json["image_url"]
+        image_url = event.get("image_url")
         if not image_url:
-            raise ValueError("image_url is required in the event") 
+            raise ValueError("image_url is required in the event")
 
         # Perform business logic in separate functions
         results = perform_google_image_search(image_url)
@@ -53,7 +50,7 @@ def lambda_handler(event, context):
         final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
 
         movie_detail = get_movie_detail(final_movie_name)
-        store_movie_detail(movie_detail)
+        # store_movie_detail(movie_detail)
     
         return {
             "statusCode": 200,
