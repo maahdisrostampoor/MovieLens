@@ -73,6 +73,7 @@ def perform_google_image_search(image_url):
     }
     
     search = GoogleSearch(params)
+    print(search)
     return search.get_dict()
 
 def extract_movie_titles(results):

@@ -4,8 +4,8 @@ import os
 import requests
 
 # AWS S3 configuration
-S3_BUCKET = 'movielens-brocode'  # replace with your S3 bucket name
-S3_REGION = 'us-east-1'  # replace with your AWS region
+S3_BUCKET = 'movielens69'  # replace with your S3 bucket name
+S3_REGION = 'eu-west-1'  # replace with your AWS region
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -45,7 +45,7 @@ def upload_file():
             object_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/{file.filename}"
 
             # Call API Gateway with S3 object URL
-            api_gateway_url = 'https://04ixgz1gx5.execute-api.eu-west-1.amazonaws.com/dev/'  # replace with your API Gateway endpoint URL
+            api_gateway_url = 'https://7w90q28lkl.execute-api.us-east-1.amazonaws.com/Prod/'  # replace with your API Gateway endpoint URL
             payload = {'image_url': object_url}
             print(payload)
 
