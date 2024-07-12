@@ -45,7 +45,7 @@ def lambda_handler(event, context):
 
         # Perform business logic in separate functions
         results = perform_google_image_search(image_url)
-        print(results)
+        # print(results)
         movie_title_list = extract_movie_titles(results)
         movie_name_ai = perform_openai_check(results)
         final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
