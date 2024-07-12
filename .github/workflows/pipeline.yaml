@@ -49,12 +49,12 @@ jobs:
         with:
           use-installer: true
 
-      - name: Assume the DEV pipeline user role
+      - name: Assume the dev pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: ${{ env.DEV_REGION }}
           role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: DEV-packaging
+          role-session-name: dev-packaging
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
@@ -114,12 +114,12 @@ jobs:
       - name: Build resources
         run: sam build --template ${SAM_TEMPLATE} --use-container
 
-      - name: Assume the DEV pipeline user role
+      - name: Assume the dev pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           aws-region: ${{ env.DEV_REGION }}
           role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: DEV-packaging
+          role-session-name: dev-packaging
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
@@ -128,12 +128,12 @@ jobs:
           sam package \
             --s3-bucket ${DEV_ARTIFACTS_BUCKET} \
             --region ${DEV_REGION} \
-            --output-template-file packaged-DEV.yaml
+            --output-template-file packaged-dev.yaml
 
       - uses: actions/upload-artifact@v3
         with:
-          name: packaged-DEV.yaml
-          path: packaged-DEV.yaml
+          name: packaged-dev.yaml
+          path: packaged-dev.yaml
 
       - name: Assume the prod pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
@@ -178,7 +178,7 @@ jobs:
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
-      - name: Deploy to de account
+      - name: Deploy to dev account
         run: |
           sam deploy --stack-name ${DEV_STACK_NAME} \
             --template packaged-dev.yaml \
