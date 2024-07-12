@@ -6,7 +6,7 @@ from openai import OpenAI
 import boto3
 import requests
 
-# Configure logging
+# # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
@@ -30,7 +30,7 @@ try:
     GOOGLE_API_KEY = get_parameter("GOOGLE_API_KEY")
     OMDB_API_KEY = get_parameter("OMDB_API_KEY")
 except Exception as e:
-    logger.error(f"Error fetching API keys: {str(e)}")
+    # logger.error(f"Error fetching API keys: {str(e)}")
     raise
 
 # Environment Api key
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
             "body": json.dumps(movie_detail)
         }
     except Exception as e:
-        logger.error(f"Error processing the event: {str(e)}")
+        # logger.error(f"Error processing the event: {str(e)}")
         return {
             "statusCode": 500,
             "body": json.dumps({
