@@ -2,3 +2,4 @@ serpapi
 google-search-results
 openai
 requests
+amazon-dax-client

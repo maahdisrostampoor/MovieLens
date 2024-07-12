@@ -5,6 +5,11 @@ from serpapi import GoogleSearch
 from openai import OpenAI
 import boto3
 import requests
+from amazondax import AmazonDaxClient
+
+# Initialize DAX client
+dax_endpoint = os.getenv('DAX_ENDPOINT')  # DAX endpoint
+dax = AmazonDaxClient(endpoint_url=dax_endpoint)
 
 # # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -49,8 +54,12 @@ def lambda_handler(event, context):
         movie_title_list = extract_movie_titles(results)
         movie_name_ai = perform_openai_check(results)
         final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
-
-        movie_detail = get_movie_detail(final_movie_name)
+        # movie_detail = get_movie_detail(final_movie_name)
+        # Check cache first
+        movie_detail = get_movie_detail_from_cache(final_movie_name)
+        if not movie_detail:
+            movie_detail = get_movie_detail(final_movie_name)
+            store_movie_detail(movie_detail)
         # store_movie_detail(movie_detail)
     
         return {
@@ -118,6 +127,17 @@ def get_movie_detail(movie_name):
     movie_detail = requests.get(movie_database_url, params=params)
     return movie_detail.json()
 
+def get_movie_detail_from_cache(movie_name):
+    try:
+        response = dax.get_item(
+            TableName=table,
+            Key={'Title': {'S': movie_name}}
+        )
+        return response.get('Item')
+    except Exception as e:
+        logger.error(f"Error getting item from cache: {str(e)}")
+        return None
+    
 def store_movie_detail(movie_detail):
     # Define attributes in Dynamodb
     item = {
