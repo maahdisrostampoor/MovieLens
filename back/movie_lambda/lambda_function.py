@@ -8,10 +8,8 @@ import requests
 from amazondax import AmazonDaxClient
 
 # Initialize DAX client
-# print("by")
 dax_endpoint = os.getenv('DAX_ENDPOINT')  # DAX endpoint 
 dax = AmazonDaxClient(endpoint_url=dax_endpoint)
-# print("hi")
 
 # # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -52,12 +50,11 @@ def lambda_handler(event, context):
 
         # Perform business logic in separate functions
         results = perform_google_image_search(image_url)
-        # print(results)
         movie_title_list = extract_movie_titles(results)
         movie_name_ai = perform_openai_check(results)
         final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
         print(final_movie_name)
-        # movie_detail = get_movie_detail(final_movie_name)
+
        # Check cache first
         movie_detail = get_movie_detail_from_cache(final_movie_name)
         if not movie_detail:
@@ -138,7 +135,7 @@ def get_movie_detail_from_cache(movie_name):
 
 def format_response(status_code, body):
     return {
-        "isBase64Encoded": False,
+        # "isBase64Encoded": False,
         "statusCode": status_code,
         "headers": {
             "Content-Type": "application/json"
@@ -149,7 +146,6 @@ def format_response(status_code, body):
     
 def store_movie_detail(movie_detail):
     # Define attributes in Dynamodb
-    print("from db")
     try:
         imdbID = movie_detail.get('imdbID')
         if not imdbID:
