@@ -56,6 +56,7 @@ def lambda_handler(event, context):
         movie_title_list = extract_movie_titles(results)
         movie_name_ai = perform_openai_check(results)
         final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
+        print(final_movie_name)
         # movie_detail = get_movie_detail(final_movie_name)
        # Check cache first
         movie_detail = get_movie_detail_from_cache(final_movie_name)
@@ -98,7 +99,7 @@ def perform_openai_check(results):
 
     client = OpenAI(api_key=OPENAI_API_KEY)
     
-    prompt = f"Extract only the name of the movie from these links: {json.dumps(results)}"
+    prompt = f"Extract only the name of the movie from these links, give only the name: {json.dumps(results)}"
     
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
@@ -124,6 +125,7 @@ def get_movie_detail(movie_name):
     return movie_detail.json()
 
 def get_movie_detail_from_cache(movie_name):
+    print("from cache")
     try:
         response = dax.get_item(
             TableName=table,
@@ -178,19 +180,23 @@ def store_movie_detail(movie_detail):
             'Website': {'S': movie_detail.get('Website') or ''},
             'Response': {'S': movie_detail.get('Response') or ''}
         }
+ # Iterate through Ratings sources and add to the item dictionary
+        for rating in movie_detail.get('Ratings', []):
+            item[rating['Source']] = {'S': rating['Value']}
+
         # Remove empty attributes
         item = {k: v for k, v in item.items() if v['S']}
 
+        # Store item in DAX
         dax.put_item(
             TableName='Movie',
             Item=item
         )
+
+        # Store item in DynamoDB
+        dynamodb_item = {k: v['S'] for k, v in item.items()}
+        table.put_item(Item=dynamodb_item)
+
     except Exception as e:
         logger.error(f"Error storing item in cache: {str(e)}")
-
-    # Iterate through Ratings sources
-    for rating in movie_detail.get('Ratings', []):
-        item[rating['Source']] = rating['Value']
-
-    # Insert item into the table
-    table.put_item(Item=item)
+        raise
