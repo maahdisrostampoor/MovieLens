@@ -59,6 +59,7 @@ def lambda_handler(event, context):
         # movie_detail = get_movie_detail(final_movie_name)
        # Check cache first
         movie_detail = get_movie_detail_from_cache(final_movie_name)
+        print(final_movie_name)
         if not movie_detail:
             movie_detail = get_movie_detail(final_movie_name)
             store_movie_detail(movie_detail)
@@ -147,8 +148,12 @@ def format_response(status_code, body):
 def store_movie_detail(movie_detail):
     # Define attributes in Dynamodb
     try:
+        imdbID = movie_detail.get('imdbID')
+        if not imdbID:
+            raise ValueError("imdbID is required and must be valid")
+
         item = {
-            'imdbID': {'S': movie_detail.get('imdbID') or ''},
+            'imdbID': {'S': imdbID},
             'Title': {'S': movie_detail.get('Title') or ''},
             'Year': {'S': movie_detail.get('Year') or ''},
             'Rated': {'S': movie_detail.get('Rated') or ''},
@@ -182,7 +187,7 @@ def store_movie_detail(movie_detail):
         )
     except Exception as e:
         logger.error(f"Error storing item in cache: {str(e)}")
-        
+
     # Iterate through Ratings sources
     for rating in movie_detail.get('Ratings', []):
         item[rating['Source']] = rating['Value']
