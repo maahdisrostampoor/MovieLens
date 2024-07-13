@@ -60,7 +60,6 @@ def lambda_handler(event, context):
         # movie_detail = get_movie_detail(final_movie_name)
        # Check cache first
         movie_detail = get_movie_detail_from_cache(final_movie_name)
-        print(final_movie_name)
         if not movie_detail:
             movie_detail = get_movie_detail(final_movie_name)
             store_movie_detail(movie_detail)
@@ -128,7 +127,7 @@ def get_movie_detail_from_cache(movie_name):
     print("from cache")
     try:
         response = dax.get_item(
-            TableName=table,
+            TableName="Movie",
             Key={'Title': {'S': movie_name}}
         )
         return response.get('Item')
@@ -149,6 +148,7 @@ def format_response(status_code, body):
     
 def store_movie_detail(movie_detail):
     # Define attributes in Dynamodb
+    print("from db")
     try:
         imdbID = movie_detail.get('imdbID')
         if not imdbID:
