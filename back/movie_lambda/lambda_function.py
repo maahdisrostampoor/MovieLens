@@ -178,39 +178,6 @@ def store_movie_detail(movie_detail):
             'Website': {'S': movie_detail.get('Website') or ''},
             'Response': {'S': movie_detail.get('Response') or ''}
         }
-def store_movie_detail(movie_detail):
-    # Define attributes in Dynamodb
-    try:
-        imdbID = movie_detail.get('imdbID')
-        if not imdbID:
-            raise ValueError("imdbID is required and must be valid")
-
-        item = {
-            'imdbID': {'S': imdbID},
-            'Title': {'S': movie_detail.get('Title') or ''},
-            'Year': {'S': movie_detail.get('Year') or ''},
-            'Rated': {'S': movie_detail.get('Rated') or ''},
-            'Released': {'S': movie_detail.get('Released') or ''},
-            'Runtime': {'S': movie_detail.get('Runtime') or ''},
-            'Genre': {'S': movie_detail.get('Genre') or ''},
-            'Director': {'S': movie_detail.get('Director') or ''},
-            'Writer': {'S': movie_detail.get('Writer') or ''},
-            'Actors': {'S': movie_detail.get('Actors') or ''},
-            'Plot': {'S': movie_detail.get('Plot') or ''},
-            'Language': {'S': movie_detail.get('Language') or ''},
-            'Country': {'S': movie_detail.get('Country') or ''},
-            'Awards': {'S': movie_detail.get('Awards') or ''},
-            'Poster': {'S': movie_detail.get('Poster') or ''},
-            'Metascore': {'S': movie_detail.get('Metascore') or ''},
-            'imdbRating': {'S': movie_detail.get('imdbRating') or ''},
-            'imdbVotes': {'S': movie_detail.get('imdbVotes') or ''},
-            'Type': {'S': movie_detail.get('Type') or ''},
-            'DVD': {'S': movie_detail.get('DVD') or ''},
-            'BoxOffice': {'S': movie_detail.get('BoxOffice') or ''},
-            'Production': {'S': movie_detail.get('Production') or ''},
-            'Website': {'S': movie_detail.get('Website') or ''},
-            'Response': {'S': movie_detail.get('Response') or ''}
-        }
         # Remove empty attributes
         item = {k: v for k, v in item.items() if v['S']}
 
