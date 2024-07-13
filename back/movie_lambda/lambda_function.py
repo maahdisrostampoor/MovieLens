@@ -135,6 +135,7 @@ def get_movie_detail_from_cache(movie_name):
 
 def format_response(status_code, body):
     return {
+        "isBase64Encoded": False,
         "statusCode": status_code,
         "headers": {
             "Content-Type": "application/json"
