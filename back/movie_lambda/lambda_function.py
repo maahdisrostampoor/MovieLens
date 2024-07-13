@@ -61,6 +61,7 @@ def lambda_handler(event, context):
        # Check cache first
         movie_detail = get_movie_detail_from_cache(final_movie_name)
         if not movie_detail:
+            print("not cache")
             movie_detail = get_movie_detail(final_movie_name)
             store_movie_detail(movie_detail)
         # store_movie_detail(movie_detail)
