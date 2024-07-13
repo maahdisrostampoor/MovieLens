@@ -8,9 +8,10 @@ import requests
 from amazondax import AmazonDaxClient
 
 # Initialize DAX client
-dax_endpoint = 'daxs://caching.ulyynr.dax-clusters.us-east-1.amazonaws.com'  # DAX endpoint
+# print("by")
+dax_endpoint = os.getenv('DAX_ENDPOINT')  # DAX endpoint 
 dax = AmazonDaxClient(endpoint_url=dax_endpoint)
-print("hi")
+# print("hi")
 
 # # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -62,19 +63,12 @@ def lambda_handler(event, context):
             movie_detail = get_movie_detail(final_movie_name)
             store_movie_detail(movie_detail)
         # store_movie_detail(movie_detail)
+        return format_response(200, movie_detail)
     
-        return {
-            "statusCode": 200,
-            "body": json.dumps(movie_detail)
-        }
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": str(e)
-            })
-        }
+        return format_response(500, {"error": str(e)})
+    
 
 def perform_google_image_search(image_url):
     params = {
@@ -138,6 +132,17 @@ def get_movie_detail_from_cache(movie_name):
     except Exception as e:
         logger.error(f"Error getting item from cache: {str(e)}")
         return None
+
+def format_response(status_code, body):
+    return {
+        "isBase64Encoded": False,
+        "statusCode": status_code,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "multiValueHeaders": {},
+        "body": json.dumps(body)
+    }
     
 def store_movie_detail(movie_detail):
     # Define attributes in Dynamodb
