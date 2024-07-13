@@ -146,33 +146,43 @@ def format_response(status_code, body):
     
 def store_movie_detail(movie_detail):
     # Define attributes in Dynamodb
-    item = {
-        'imdbID': movie_detail.get('imdbID'),
-        'Title': movie_detail.get('Title'),
-        'Year': movie_detail.get('Year'),
-        'Rated': movie_detail.get('Rated'),
-        'Released': movie_detail.get('Released'),
-        'Runtime': movie_detail.get('Runtime'),
-        'Genre': movie_detail.get('Genre'),
-        'Director': movie_detail.get('Director'),
-        'Writer': movie_detail.get('Writer'),
-        'Actors': movie_detail.get('Actors'),
-        'Plot': movie_detail.get('Plot'),
-        'Language': movie_detail.get('Language'),
-        'Country': movie_detail.get('Country'),
-        'Awards': movie_detail.get('Awards'),
-        'Poster': movie_detail.get('Poster'),
-        'Metascore': movie_detail.get('Metascore'),
-        'imdbRating': movie_detail.get('imdbRating'),
-        'imdbVotes': movie_detail.get('imdbVotes'),
-        'Type': movie_detail.get('Type'),
-        'DVD': movie_detail.get('DVD'),
-        'BoxOffice': movie_detail.get('BoxOffice'),
-        'Production': movie_detail.get('Production'),
-        'Website': movie_detail.get('Website'),
-        'Response': movie_detail.get('Response')
-    }
+    try:
+        item = {
+            'imdbID': {'S': movie_detail.get('imdbID') or ''},
+            'Title': {'S': movie_detail.get('Title') or ''},
+            'Year': {'S': movie_detail.get('Year') or ''},
+            'Rated': {'S': movie_detail.get('Rated') or ''},
+            'Released': {'S': movie_detail.get('Released') or ''},
+            'Runtime': {'S': movie_detail.get('Runtime') or ''},
+            'Genre': {'S': movie_detail.get('Genre') or ''},
+            'Director': {'S': movie_detail.get('Director') or ''},
+            'Writer': {'S': movie_detail.get('Writer') or ''},
+            'Actors': {'S': movie_detail.get('Actors') or ''},
+            'Plot': {'S': movie_detail.get('Plot') or ''},
+            'Language': {'S': movie_detail.get('Language') or ''},
+            'Country': {'S': movie_detail.get('Country') or ''},
+            'Awards': {'S': movie_detail.get('Awards') or ''},
+            'Poster': {'S': movie_detail.get('Poster') or ''},
+            'Metascore': {'S': movie_detail.get('Metascore') or ''},
+            'imdbRating': {'S': movie_detail.get('imdbRating') or ''},
+            'imdbVotes': {'S': movie_detail.get('imdbVotes') or ''},
+            'Type': {'S': movie_detail.get('Type') or ''},
+            'DVD': {'S': movie_detail.get('DVD') or ''},
+            'BoxOffice': {'S': movie_detail.get('BoxOffice') or ''},
+            'Production': {'S': movie_detail.get('Production') or ''},
+            'Website': {'S': movie_detail.get('Website') or ''},
+            'Response': {'S': movie_detail.get('Response') or ''}
+        }
+        # Remove empty attributes
+        item = {k: v for k, v in item.items() if v['S']}
 
+        dax.put_item(
+            TableName='Movie',
+            Item=item
+        )
+    except Exception as e:
+        logger.error(f"Error storing item in cache: {str(e)}")
+        
     # Iterate through Ratings sources
     for rating in movie_detail.get('Ratings', []):
         item[rating['Source']] = rating['Value']
