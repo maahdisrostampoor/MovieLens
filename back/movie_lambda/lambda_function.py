@@ -17,7 +17,7 @@ logger = logging.getLogger()
 
 # Initialize clients
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-table = dynamodb.Table('Movie')
+table = dynamodb.Table('MovieLens')
 ssm_client = boto3.client('ssm')
 movie_database_url = "http://www.omdbapi.com/"
 
@@ -125,7 +125,7 @@ def get_movie_detail_from_cache(movie_name):
     print("from cache")
     try:
         response = dax.get_item(
-            TableName="Movie",
+            TableName="MovieLens",
             Key={'Title': {'S': movie_name}}
         )
         return response.get('Item')
@@ -186,7 +186,7 @@ def store_movie_detail(movie_detail):
 
         # Store item in DAX
         dax.put_item(
-            TableName='Movie',
+            TableName='MovieLens',
             Item=item
         )
 
