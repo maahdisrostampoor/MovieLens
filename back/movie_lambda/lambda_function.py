@@ -140,6 +140,7 @@ def format_response(status_code, body):
         "headers": {
             "Content-Type": "application/json"
         },
+        "multiValueHeaders": {},
         "body": json.dumps(body)
     }
     
