@@ -4,8 +4,8 @@ import os
 import requests
 
 # AWS S3 configuration
-S3_BUCKET = 'movielens69'  # replace with your S3 bucket name
-S3_REGION = 'eu-west-1'  # replace with your AWS region
+S3_BUCKET = 'movielens-brocode' 
+S3_REGION = 'us-east-1'
 
 # Initialize Flask application
 app = Flask(__name__)
