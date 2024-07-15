@@ -4,7 +4,7 @@ oidc_provider_url = "https://token.actions.githubusercontent.com"
 oidc_client_id = "sts.amazonaws.com"
 github_org = "maahdisrostampoor"
 github_repo = "MovieLens"
-deployment_branch = "main"
+deployment_branch = "dev"
 oidc_provider = "github-actions"
 permissions_provider = "OpenID Connect (OIDC)"
 
