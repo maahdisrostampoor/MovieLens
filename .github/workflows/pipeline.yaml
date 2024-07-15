@@ -78,7 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: aws-actions/setup-sam@v2
-        with:
+        with: 
           use-installer: true
       - run: sam build --template ${SAM_TEMPLATE} --use-container
 
