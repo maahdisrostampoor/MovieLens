@@ -48,10 +48,11 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def lambda_handler(event, context):
     try:
-        body = json.loads(event['body'])
-        image_base64 = body['image_base64']
-        filename = body['filename']
-
+        image_base64 = event.get("image_base64")
+        filename = event.get("filename")
+        # body = json.loads(event['body'])
+        # image_base64 = body['image_base64']
+        # filename = body['filename']
         # Decode the base64 image
         image_data = base64.b64decode(image_base64)
 
