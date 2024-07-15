@@ -6,6 +6,9 @@ from openai import OpenAI
 import boto3
 import requests
 from amazondax import AmazonDaxClient
+import base64
+from requests_toolbelt.multipart import decoder
+
 
 # Initialize DAX client
 dax_endpoint = os.getenv('DAX_ENDPOINT')  # DAX endpoint 
@@ -19,6 +22,7 @@ logger = logging.getLogger()
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 table = dynamodb.Table('MovieLens')
 ssm_client = boto3.client('ssm')
+s3_client = boto3.client('s3')
 movie_database_url = "http://www.omdbapi.com/"
 
 
@@ -44,9 +48,34 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def lambda_handler(event, context):
     try:
-        image_url = event.get("image_url")
+        content_type = event["headers"].get("Content-Type") or event["headers"].get("content-type")
+        if not content_type.startswith("multipart/form-data"):
+            raise ValueError("Content-Type must be multipart/form-data")
+
+        body = base64.b64decode(event["body"])
+        multipart_data = decoder.MultipartDecoder(body, content_type)
+
+        image_file = None
+        image_url = None
+
+        for part in multipart_data.parts:
+            disposition = part.headers[b'Content-Disposition'].decode('utf-8')
+            if 'filename' in disposition:
+                image_file = part.content
+                filename = disposition.split("filename=")[1].strip('"')
+            if 'name="image_url"' in disposition:
+                image_url = part.text
+
+        if image_file:
+            s3_bucket = os.getenv('S3_BUCKET_NAME')
+            s3_region = os.getenv('S3_REGION')
+            s3_key = f"{filename}"
+            s3_client.put_object(Bucket=s3_bucket, Key=s3_key, Body=image_file)
+            image_url = f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/{s3_key}"
+
         if not image_url:
-            raise ValueError("image_url is required in the event")
+            raise ValueError("image_url is required in the event or as a file")
+
 
         # Perform business logic in separate functions
         results = perform_google_image_search(image_url)
