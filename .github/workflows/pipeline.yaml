@@ -200,7 +200,7 @@ jobs:
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
-    # needs: [deploy-dev]
+    needs: [deploy-dev]
     runs-on: ubuntu-latest
     # Configure GitHub Action Environment to have a manual approval step before deployment to production
     # https://docs.github.com/en/actions/reference/environments
@@ -210,9 +210,15 @@ jobs:
       - uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
-      - uses: actions/download-artifact@v3
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: packaged-prod.yaml
+
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v2
         with:
           name: packaged-prod.yaml
+          path: .
 
       - name: Assume the prod pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
