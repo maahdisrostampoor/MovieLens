@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'feature**'
+      - 'dev'
   # dgieature**'
 
 env:
@@ -102,10 +103,10 @@ jobs:
             --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
 
   build-and-package:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/dev'
     needs: [test]
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - uses: actions/checkout@v3
       - uses: aws-actions/setup-sam@v2
         with:
@@ -157,7 +158,7 @@ jobs:
           path: packaged-prod.yaml
 
   deploy-dev:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/dev'
     needs: [build-and-package]
     runs-on: ubuntu-latest
     steps:
