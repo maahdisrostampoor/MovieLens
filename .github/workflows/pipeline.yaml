@@ -103,7 +103,8 @@ jobs:
             --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
 
   build-and-package:
-    if: github.ref == 'refs/heads/dev'
+    if: github.event_name == 'push'
+    # if: github.ref == 'refs/heads/dev'
     needs: [test]
     runs-on: ubuntu-latest
     steps: 
@@ -200,6 +201,7 @@ jobs:
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
+    needs: [build-and-package]
    # needs: [deploy-dev]
     runs-on: ubuntu-latest
     # Configure GitHub Action Environment to have a manual approval step before deployment to production
