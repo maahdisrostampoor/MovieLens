@@ -50,36 +50,16 @@ def lambda_handler(event, context):
     try:
         image_base64 = event.get("image_base64")
         filename = event.get("filename")
-        # body = json.loads(event['body'])
-        # image_base64 = body['image_base64']
-        # filename = body['filename']
-        # Decode the base64 image
+
         image_data = base64.b64decode(image_base64)
 
-
-        # content_type = event["headers"].get("Content-Type") or event["headers"].get("content-type")
-        # if not content_type.startswith("multipart/form-data"):
-        #     raise ValueError("Content-Type must be multipart/form-data")
-
-        # body = base64.b64decode(event["body"])
-        # multipart_data = decoder.MultipartDecoder(body, content_type)
-
-        # image_file = None
-        # image_url = None
-
-        # for part in multipart_data.parts:
-        #     disposition = part.headers[b'Content-Disposition'].decode('utf-8')
-        #     if 'filename' in disposition:
-        #         image_file = part.content
-        #         filename = disposition.split("filename=")[1].strip('"')
-        #     if 'name="image_url"' in disposition:
-        #         image_url = part.text
 
         s3_bucket = os.getenv('S3_BUCKET_NAME')
         s3_region = os.getenv('S3_REGION')
         s3_key = f"{filename}"
         s3_client.put_object(Bucket=s3_bucket, Key=s3_key, Body=image_data)
         image_url = f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/{s3_key}"
+
 
         if not image_url:
             raise ValueError("image_url is required in the event or as a file")
@@ -104,7 +84,7 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error(f"Error processing the event: {str(e)}")
         return format_response(500, {"error": str(e)})
-    
+
 
 def perform_google_image_search(image_url):
     params = {
