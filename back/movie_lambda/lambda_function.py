@@ -42,7 +42,7 @@ except Exception as e:
     logger.error(f"Error fetching API keys: {str(e)}")
     raise
 
-# Environment Api key
+# Environment Api key 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
@@ -50,17 +50,15 @@ def lambda_handler(event, context):
     try:
         image_base64 = event.get("image_base64")
         filename = event.get("filename")
-
+        # Decode the image
         image_data = base64.b64decode(image_base64)
 
-
+        # Store in S3 bucket
         s3_bucket = os.getenv('S3_BUCKET_NAME')
         s3_region = os.getenv('S3_REGION')
         s3_key = f"{filename}"
         s3_client.put_object(Bucket=s3_bucket, Key=s3_key, Body=image_data)
         image_url = f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/{s3_key}"
-
-
         if not image_url:
             raise ValueError("image_url is required in the event or as a file")
 
@@ -78,7 +76,7 @@ def lambda_handler(event, context):
             print("not cache")
             movie_detail = get_movie_detail(final_movie_name)
             store_movie_detail(movie_detail)
-        # store_movie_detail(movie_detail)
+            
         return format_response(200, movie_detail)
     
     except Exception as e:

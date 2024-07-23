@@ -1,19 +1,20 @@
 import requests
 import base64
+import random
+import string
 
 # URL of your API Gateway endpoint
-url = 'https://nnjbk1ac5a.execute-api.us-east-1.amazonaws.com/Prod/'
+# url = 'https://nnjbk1ac5a.execute-api.us-east-1.amazonaws.com/Prod/'
+url = 'https://7w90q28lkl.execute-api.us-east-1.amazonaws.com/Prod/'
 
 # Path to the image file
-image_file_path = '/home/maahdis/Pictures/1.jpeg'
+image_file_path = '/home/maahdis/Pictures/6.jpeg'
 
 # Prepare the image file to be sent
 with open(image_file_path, 'rb') as image_file:
     image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+    print(image_base64)
 
-
-import random
-import string
 
 def generate_random_filename(length=10):
     letters_and_digits = string.ascii_letters + string.digits
