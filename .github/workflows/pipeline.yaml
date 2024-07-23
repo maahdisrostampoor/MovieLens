@@ -5,24 +5,25 @@ on:
     branches:
       - 'main'
       - 'feature**'
-      - 'dev'
-  # dgieature**'
+  delete:
+    branches:
+      - 'feature**'
 
 env:
   SAM_TEMPLATE: template.yaml
-  DEV_STACK_NAME: sam-dev
-  DEV_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-UaHDX0uHMlbb
-  DEV_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-w8faWVZpG2wg
-  DEV_ARTIFACTS_BUCKET: aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-hkgixjbuzwh8
+  TESTING_STACK_NAME: sam-prod
+  TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-3vGAPjE6WYys
+  TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-y2nOkfZhAnYM
+  TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-jdlipm2f3ovf
   # If there are functions with "Image" PackageType in your template,
-  # uncomment the line below and add "--image-repository ${DEV_IMAGE_REPOSITORY}" to
-  # DEV "sam package" and "sam deploy" commands.
-  # DEV_IMAGE_REPOSITORY = '0123456789.dkr.ecr.region.amazonaws.com/repository-name'
-  DEV_REGION: us-east-1
-  PROD_STACK_NAME: sam-prod
-  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-nqfCgyJpQeCe
-  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-XyodNvEhsqDv
-  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-bmcqaivt57h4
+  # uncomment the line below and add "--image-repository ${TESTING_IMAGE_REPOSITORY}" to
+  # testing "sam package" and "sam deploy" commands.
+  # TESTING_IMAGE_REPOSITORY = '0123456789.dkr.ecr.region.amazonaws.com/repository-name'
+  TESTING_REGION: us-east-1
+  PROD_STACK_NAME: sam-dev
+  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-3vGAPjE6WYys
+  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-y2nOkfZhAnYM
+  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-jdlipm2f3ovf
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${PROD_IMAGE_REPOSITORY}" to
   # prod "sam package" and "sam deploy" commands.
@@ -50,12 +51,12 @@ jobs:
         with:
           use-installer: true
 
-      - name: Assume the dev pipeline user role
+      - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-region: ${{ env.DEV_REGION }}
-          role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: dev-packaging
+          aws-region: ${{ env.TESTING_REGION }}
+          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: testing-packaging
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
@@ -65,7 +66,7 @@ jobs:
         run: |
           sam delete \
             --stack-name $(echo ${FEATURE_BRANCH_NAME##*/} | tr -cd '[a-zA-Z0-9-]') \
-            --region ${DEV_REGION} \
+            --region ${TESTING_REGION} \
             --no-prompts
 
   build-and-deploy-feature:
@@ -83,31 +84,30 @@ jobs:
           use-installer: true
       - run: sam build --template ${SAM_TEMPLATE} --use-container
 
-      - name: Assume the DEV pipeline user role
+      - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-region: ${{ env.DEV_REGION }}
-          role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
+          aws-region: ${{ env.TESTING_REGION }}
+          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
           role-session-name: feature-deployment
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
-      - name: Deploy to feature stack in the DEV account
+      - name: Deploy to feature stack in the testing account
         shell: bash
         run: |
           sam deploy --stack-name $(echo ${GITHUB_REF##*/} | tr -cd '[a-zA-Z0-9-]') \
             --capabilities CAPABILITY_IAM \
-            --region ${DEV_REGION} \
-            --s3-bucket ${DEV_ARTIFACTS_BUCKET} \
+            --region ${TESTING_REGION} \
+            --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
-            --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
+            --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
 
   build-and-package:
-    if: github.event_name == 'push'
-    # if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/main'
     needs: [test]
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - uses: actions/checkout@v3
       - uses: aws-actions/setup-sam@v2
         with:
@@ -116,26 +116,26 @@ jobs:
       - name: Build resources
         run: sam build --template ${SAM_TEMPLATE} --use-container
 
-      - name: Assume the dev pipeline user role
+      - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-region: ${{ env.DEV_REGION }}
-          role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: dev-packaging
+          aws-region: ${{ env.TESTING_REGION }}
+          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: testing-packaging
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
-      - name: Upload artifacts to DEV artifact buckets
+      - name: Upload artifacts to testing artifact buckets
         run: |
           sam package \
-            --s3-bucket ${DEV_ARTIFACTS_BUCKET} \
-            --region ${DEV_REGION} \
-            --output-template-file packaged-dev.yaml
+            --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
+            --region ${TESTING_REGION} \
+            --output-template-file packaged-testing.yaml
 
       - uses: actions/upload-artifact@v3
         with:
-          name: packaged-dev.yaml
-          path: packaged-dev.yaml
+          name: packaged-testing.yaml
+          path: packaged-testing.yaml
 
       - name: Assume the prod pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
@@ -158,8 +158,8 @@ jobs:
           name: packaged-prod.yaml
           path: packaged-prod.yaml
 
-  deploy-dev:
-    if: github.ref == 'refs/heads/dev'
+  deploy-testing:
+    if: github.ref == 'refs/heads/main'
     needs: [build-and-package]
     runs-on: ubuntu-latest
     steps:
@@ -169,40 +169,39 @@ jobs:
           use-installer: true
       - uses: actions/download-artifact@v3
         with:
-          name: packaged-dev.yaml
+          name: packaged-testing.yaml
 
-      - name: Assume the dev pipeline user role
+      - name: Assume the testing pipeline user role
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-region: ${{ env.DEV_REGION }}
-          role-to-assume: ${{ env.DEV_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: dev-deployment
+          aws-region: ${{ env.TESTING_REGION }}
+          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: testing-deployment
           role-duration-seconds: 3600
           role-skip-session-tagging: true
 
-      - name: Deploy to dev account
+      - name: Deploy to testing account
         run: |
-          sam deploy --stack-name ${DEV_STACK_NAME} \
-            --template packaged-dev.yaml \
+          sam deploy --stack-name ${TESTING_STACK_NAME} \
+            --template packaged-testing.yaml \
             --capabilities CAPABILITY_IAM \
-            --region ${DEV_REGION} \
-            --s3-bucket ${DEV_ARTIFACTS_BUCKET} \
+            --region ${TESTING_REGION} \
+            --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
             --no-fail-on-empty-changeset \
-            --role-arn ${DEV_CLOUDFORMATION_EXECUTION_ROLE}
+            --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
 
-  # integration-test:
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: [deploy-DEV]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - run: |
-  #         # trigger the integration tests here
+  integration-test:
+    if: github.ref == 'refs/heads/main'
+    needs: [deploy-testing]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          # trigger the integration tests here
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
-    needs: [build-and-package]
-   # needs: [deploy-dev]
+    needs: [integration-test]
     runs-on: ubuntu-latest
     # Configure GitHub Action Environment to have a manual approval step before deployment to production
     # https://docs.github.com/en/actions/reference/environments
