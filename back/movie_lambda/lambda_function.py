@@ -76,6 +76,11 @@ def lambda_handler(event, context):
             print("not cache")
             movie_detail = get_movie_detail(final_movie_name)
             store_movie_detail(movie_detail)
+
+            # Related Movie Details
+            related_movies = get_related_movies(movie_detail['Genre'].split(', ')[0])
+            store_related_movies(related_movies)
+            movie_detail['RelatedMovies'] = related_movies
             
         return format_response(200, movie_detail)
     
@@ -126,7 +131,7 @@ def get_final_movie_name(movie_title_list, movie_name_ai):
             return movie
     return movie_name_ai
 
-
+ 
 def get_movie_detail(movie_name):
     params = {
         "apikey": OMDB_API_KEY,
@@ -135,6 +140,32 @@ def get_movie_detail(movie_name):
 
     movie_detail = requests.get(movie_database_url, params=params)
     return movie_detail.json()
+
+#Fetch Related Movies "Genre"
+def get_related_movies(genre):
+
+    params = {
+        'apikey': OMDB_API_KEY,
+        's': genre,  
+        'type': 'movie' 
+    }
+
+    response = requests.get(movie_database_url, params=params)
+
+    related_movies = []
+    
+    if response.status_code == 200:
+        data = response.json()
+        if data.get('Response') == 'True':
+
+            for movie in data.get('Search', [])[:4]:
+                related_movies.append({
+                    'Title': movie['Title'],
+                    'Poster': movie.get('Poster', 'N/A')
+                })
+
+    return related_movies
+
 
 def get_movie_detail_from_cache(movie_name):
     print("from cache")
@@ -212,3 +243,18 @@ def store_movie_detail(movie_detail):
     except Exception as e:
         logger.error(f"Error storing item in cache: {str(e)}")
         raise
+
+
+def store_related_movies(related_movies):
+    for movie in related_movies:
+        try:
+            item = {
+                'imdbID': 'related_' + movie['Title'].replace(' ', '_'),  # Create a unique ID for related movies
+                'Details': {
+                    'Title': movie['Title'],
+                    'Poster': movie.get('Poster', 'N/A')
+                }
+            }
+            table.put_item(Item=item)
+        except Exception as e:
+            logger.error(f"Error storing related movie details: {str(e)}")
