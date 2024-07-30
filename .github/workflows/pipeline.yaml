@@ -5,25 +5,25 @@ on:
     branches:
       - 'main'
       - 'feature**'
-  delete: 
+  delete:
     branches:
       - 'feature**'
 
 env:
   SAM_TEMPLATE: template.yaml
-  TESTING_STACK_NAME: sam-prod
-  TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-3vGAPjE6WYys
-  TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-y2nOkfZhAnYM
-  TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-jdlipm2f3ovf
+  TESTING_STACK_NAME: sam-dev
+  TESTING_PIPELINE_EXECUTION_ROLE: arn:aws:iam::010438478482:role/aws-sam-cli-managed-dev-pipel-PipelineExecutionRole-gJ6KOIRgLONX
+  TESTING_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::010438478482:role/aws-sam-cli-managed-dev-p-CloudFormationExecutionRo-MMwVuIkyk7iL
+  TESTING_ARTIFACTS_BUCKET: aws-sam-cli-managed-dev-pipeline-r-artifactsbucket-ml6opoafswtj
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${TESTING_IMAGE_REPOSITORY}" to
   # testing "sam package" and "sam deploy" commands.
   # TESTING_IMAGE_REPOSITORY = '0123456789.dkr.ecr.region.amazonaws.com/repository-name'
   TESTING_REGION: us-east-1
-  PROD_STACK_NAME: sam-dev
-  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-3vGAPjE6WYys
-  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::381492285923:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-y2nOkfZhAnYM
-  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-jdlipm2f3ovf
+  PROD_STACK_NAME: sam-prod
+  PROD_PIPELINE_EXECUTION_ROLE: arn:aws:iam::010438478482:role/aws-sam-cli-managed-prod-pipe-PipelineExecutionRole-0p9lNLzaDivq
+  PROD_CLOUDFORMATION_EXECUTION_ROLE: arn:aws:iam::010438478482:role/aws-sam-cli-managed-prod--CloudFormationExecutionRo-wTjPQjV0aJ2B
+  PROD_ARTIFACTS_BUCKET: aws-sam-cli-managed-prod-pipeline--artifactsbucket-s26jjof04fb6
   # If there are functions with "Image" PackageType in your template,
   # uncomment the line below and add "--image-repository ${PROD_IMAGE_REPOSITORY}" to
   # prod "sam package" and "sam deploy" commands.
@@ -42,70 +42,69 @@ jobs:
       - run: |
           # trigger the tests here
 
-  delete-feature:
-    if: startsWith(github.event.ref, 'feature') && github.event_name == 'delete'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: aws-actions/setup-sam@v2
-        with:
-          use-installer: true
+  # delete-feature:
+  #   if: startsWith(github.event.ref, 'feature') && github.event_name == 'delete'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: aws-actions/setup-sam@v2
+  #       with:
+  #         use-installer: true
 
-      - name: Assume the testing pipeline user role
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-region: ${{ env.TESTING_REGION }}
-          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: testing-packaging
-          role-duration-seconds: 3600
-          role-skip-session-tagging: true
+  #     - name: Assume the testing pipeline user role
+  #       uses: aws-actions/configure-aws-credentials@v1-node16
+  #       with:
+  #         aws-region: ${{ env.TESTING_REGION }}
+  #         role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
+  #         role-session-name: testing-packaging
+  #         role-duration-seconds: 3600
+  #         role-skip-session-tagging: true
 
-      - name: Delete feature branch stack
-        env:
-          FEATURE_BRANCH_NAME: ${{ github.event.ref }}
-        run: |
-          sam delete \
-            --stack-name $(echo ${FEATURE_BRANCH_NAME##*/} | tr -cd '[a-zA-Z0-9-]') \
-            --region ${TESTING_REGION} \
-            --no-prompts
+  #     - name: Delete feature branch stack
+  #       env:
+  #         FEATURE_BRANCH_NAME: ${{ github.event.ref }}
+  #       run: |
+  #         sam delete \
+  #           --stack-name $(echo ${FEATURE_BRANCH_NAME##*/} | tr -cd '[a-zA-Z0-9-]') \
+  #           --region ${TESTING_REGION} \
+  #           --no-prompts
 
-  build-and-deploy-feature:
-    # this stage is triggered only for feature branches (feature*),
-    # which will build the stack and deploy to a stack named with branch name.
-    # https://github.com/actions/setup-python
-    # https://github.com/aws-actions/configure-aws-credentials#notice-node12-deprecation-warning
-    if: startsWith(github.ref, 'refs/heads/feature')
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: aws-actions/setup-sam@v2
-        with: 
-          use-installer: true
-      - run: sam build --template ${SAM_TEMPLATE} --use-container
+  # build-and-deploy-feature:
+  #   # this stage is triggered only for feature branches (feature*),
+  #   # which will build the stack and deploy to a stack named with branch name.
+  #   # https://github.com/actions/setup-python
+  #   # https://github.com/aws-actions/configure-aws-credentials#notice-node12-deprecation-warning
+  #   if: startsWith(github.ref, 'refs/heads/feature')
+  #   needs: [test]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: aws-actions/setup-sam@v2
+  #       with:
+  #         use-installer: true
+  #     - run: sam build --template ${SAM_TEMPLATE} --use-container
 
-      - name: Assume the testing pipeline user role
-        uses: aws-actions/configure-aws-credentials@v1-node16
-        with:
-          aws-region: ${{ env.TESTING_REGION }}
-          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
-          role-session-name: feature-deployment
-          role-duration-seconds: 3600
-          role-skip-session-tagging: true
+  #     - name: Assume the testing pipeline user role
+  #       uses: aws-actions/configure-aws-credentials@v1-node16
+  #       with:
+  #         aws-region: ${{ env.TESTING_REGION }}
+  #         role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
+  #         role-session-name: feature-deployment
+  #         role-duration-seconds: 3600
+  #         role-skip-session-tagging: true
 
-      - name: Deploy to feature stack in the testing account
-        shell: bash
-        run: |
-          sam deploy --stack-name $(echo ${GITHUB_REF##*/} | tr -cd '[a-zA-Z0-9-]') \
-            --capabilities CAPABILITY_IAM \
-            --region ${TESTING_REGION} \
-            --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
-            --no-fail-on-empty-changeset \
-            --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
+  #     - name: Deploy to feature stack in the testing account
+  #       shell: bash
+  #       run: |
+  #         sam deploy --stack-name $(echo ${GITHUB_REF##*/} | tr -cd '[a-zA-Z0-9-]') \
+  #           --capabilities CAPABILITY_IAM \
+  #           --region ${TESTING_REGION} \
+  #           --s3-bucket ${TESTING_ARTIFACTS_BUCKET} \
+  #           --no-fail-on-empty-changeset \
+  #           --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
 
   build-and-package:
     if: github.ref == 'refs/heads/main'
-    needs: [test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -190,18 +189,18 @@ jobs:
             --no-fail-on-empty-changeset \
             --role-arn ${TESTING_CLOUDFORMATION_EXECUTION_ROLE}
 
-  integration-test:
-    if: github.ref == 'refs/heads/main'
-    needs: [deploy-testing]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: |
-          # trigger the integration tests here
+  # integration-test:
+  #   if: github.ref == 'refs/heads/main'
+  #   needs: [deploy-testing]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - run: |
+  #         # trigger the integration tests here
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
-    needs: [integration-test]
+    # needs: [integration-test]
     runs-on: ubuntu-latest
     # Configure GitHub Action Environment to have a manual approval step before deployment to production
     # https://docs.github.com/en/actions/reference/environments
