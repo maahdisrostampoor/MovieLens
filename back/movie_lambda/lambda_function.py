@@ -11,8 +11,8 @@ from requests_toolbelt.multipart import decoder
 
 
 # Initialize DAX client
-dax_endpoint = os.getenv('DAX_ENDPOINT')  # DAX endpoint 
-dax = AmazonDaxClient(endpoint_url=dax_endpoint)
+# dax_endpoint = os.getenv('DAX_ENDPOINT')  # DAX endpoint 
+# dax = AmazonDaxClient(endpoint_url=dax_endpoint)
 
 # # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -71,16 +71,16 @@ def lambda_handler(event, context):
         print(final_movie_name)
 
        # Check cache first
-        movie_detail = get_movie_detail_from_cache(final_movie_name)
-        if not movie_detail:
-            print("not cache")
-            movie_detail = get_movie_detail(final_movie_name)
-            store_movie_detail(movie_detail)
+        # movie_detail = get_movie_detail_from_cache(final_movie_name)
+        # if not movie_detail:
+        #     print("not cache")
+        movie_detail = get_movie_detail(final_movie_name)
+        store_movie_detail(movie_detail)
 
             # Related Movie Details
-            related_movies = get_related_movies(movie_detail['Genre'].split(', ')[0])
-            store_related_movies(related_movies)
-            movie_detail['RelatedMovies'] = related_movies
+        related_movies = get_related_movies(movie_detail['Genre'].split(', ')[0])
+        store_related_movies(related_movies)
+        movie_detail['RelatedMovies'] = related_movies
             
         return format_response(200, movie_detail)
     
@@ -167,17 +167,17 @@ def get_related_movies(genre):
     return related_movies
 
 
-def get_movie_detail_from_cache(movie_name):
-    print("from cache")
-    try:
-        response = dax.get_item(
-            TableName="MovieLens",
-            Key={'Title': {'S': movie_name}}
-        )
-        return response.get('Item')
-    except Exception as e:
-        logger.error(f"Error getting item from cache: {str(e)}")
-        return None
+# def get_movie_detail_from_cache(movie_name):
+#     print("from cache")
+#     try:
+#         response = dax.get_item(
+#             TableName="MovieLens",
+#             Key={'Title': {'S': movie_name}}
+#         )
+#         return response.get('Item')
+#     except Exception as e:
+#         logger.error(f"Error getting item from cache: {str(e)}")
+#         return None
 
 def format_response(status_code, body):
     return {
@@ -231,10 +231,10 @@ def store_movie_detail(movie_detail):
         item = {k: v for k, v in item.items() if v['S']}
 
         # Store item in DAX
-        dax.put_item(
-            TableName='MovieLens',
-            Item=item
-        )
+        # dax.put_item(
+        #     TableName='MovieLens',
+        #     Item=item
+        # )
 
         # Store item in DynamoDB
         dynamodb_item = {k: v['S'] for k, v in item.items()}
