@@ -130,7 +130,7 @@ def get_final_movie_name(movie_title_list, movie_name_ai):
         if movie == movie_name_ai:
             return movie
     return movie_name_ai
-
+ 
  
 def get_movie_detail(movie_name):
     params = {
@@ -187,7 +187,7 @@ def format_response(status_code, body):
             "Content-Type": "application/json"
         },
         "multiValueHeaders": {},
-        "body": json.dumps(body)
+        "body": json.dumps(body) 
     }
     
 def store_movie_detail(movie_detail):
