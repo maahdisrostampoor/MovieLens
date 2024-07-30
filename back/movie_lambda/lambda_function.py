@@ -48,27 +48,41 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def lambda_handler(event, context):
     try:
+
         image_base64 = event.get("image_base64")
         filename = event.get("filename")
-        # Decode the image
-        image_data = base64.b64decode(image_base64)
+        movie_name = event.get("movie_name")
+        
+        # If image and filename is present in request body
+        if image_base64 and filename:
+            # Decode the image
+            image_data = base64.b64decode(image_base64)
 
-        # Store in S3 bucket
-        s3_bucket = os.getenv('S3_BUCKET_NAME')
-        s3_region = os.getenv('S3_REGION')
-        s3_key = f"{filename}"
-        s3_client.put_object(Bucket=s3_bucket, Key=s3_key, Body=image_data)
-        image_url = f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/{s3_key}"
-        if not image_url:
-            raise ValueError("image_url is required in the event or as a file")
+            # Store in S3 bucket
+            s3_bucket = os.getenv('S3_BUCKET_NAME')
+            s3_region = os.getenv('S3_REGION')
+            s3_key = f"{filename}"
+
+            # Store in S3 bucket
+            s3_client.put_object(Bucket=s3_bucket, Key=s3_key, Body=image_data)
+            image_url = f"https://{s3_bucket}.s3.{s3_region}.amazonaws.com/{s3_key}"
+            if not image_url:
+                raise ValueError("image_url is required in the event or as a file")
 
 
-        # Perform business logic in separate functions
-        results = perform_google_image_search(image_url)
-        movie_title_list = extract_movie_titles(results)
-        movie_name_ai = perform_openai_check(results)
-        final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
-        print(final_movie_name)
+            # Perform business logic in separate functions
+            results = perform_google_image_search(image_url)
+            movie_title_list = extract_movie_titles(results)
+            movie_name_ai = perform_openai_check(results)
+            final_movie_name = get_final_movie_name(movie_title_list, movie_name_ai)
+            print(final_movie_name)
+        
+        # If movie_name is present
+        elif movie_name:
+            final_movie_name = movie_name
+        else:
+            raise ValueError("Either image_base64 and filename or movie_name must be provided.")
+
 
        # Check cache first
         # movie_detail = get_movie_detail_from_cache(final_movie_name)
@@ -77,9 +91,8 @@ def lambda_handler(event, context):
         movie_detail = get_movie_detail(final_movie_name)
         store_movie_detail(movie_detail)
 
-            # Related Movie Details
+        # Related Movie Details
         related_movies = get_related_movies(movie_detail['Genre'].split(', ')[0])
-        store_related_movies(related_movies)
         movie_detail['RelatedMovies'] = related_movies
             
         return format_response(200, movie_detail)
@@ -130,7 +143,7 @@ def get_final_movie_name(movie_title_list, movie_name_ai):
         if movie == movie_name_ai:
             return movie
     return movie_name_ai
- 
+
  
 def get_movie_detail(movie_name):
     params = {
@@ -159,10 +172,7 @@ def get_related_movies(genre):
         if data.get('Response') == 'True':
 
             for movie in data.get('Search', [])[:4]:
-                related_movies.append({
-                    'Title': movie['Title'],
-                    'Poster': movie.get('Poster', 'N/A')
-                })
+                related_movies.append(movie)
 
     return related_movies
 
@@ -187,7 +197,7 @@ def format_response(status_code, body):
             "Content-Type": "application/json"
         },
         "multiValueHeaders": {},
-        "body": json.dumps(body) 
+        "body": json.dumps(body)
     }
     
 def store_movie_detail(movie_detail):
@@ -243,18 +253,3 @@ def store_movie_detail(movie_detail):
     except Exception as e:
         logger.error(f"Error storing item in cache: {str(e)}")
         raise
-
-
-def store_related_movies(related_movies):
-    for movie in related_movies:
-        try:
-            item = {
-                'imdbID': 'related_' + movie['Title'].replace(' ', '_'),  # Create a unique ID for related movies
-                'Details': {
-                    'Title': movie['Title'],
-                    'Poster': movie.get('Poster', 'N/A')
-                }
-            }
-            table.put_item(Item=item)
-        except Exception as e:
-            logger.error(f"Error storing related movie details: {str(e)}")
